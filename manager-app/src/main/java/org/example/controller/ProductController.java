@@ -2,10 +2,9 @@ package org.example.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.client.ProductsRestClient;
 import org.example.controller.payload.UpdateProductPayload;
 import org.example.entity.Product;
-import org.example.service.DefaultProductService;
-import org.example.service.ProductService;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -25,12 +24,12 @@ import java.util.NoSuchElementException;
 @RequestMapping("catalogue/products/{productId:\\d+}")
 public class ProductController {
 
-    private final ProductService productService;
+    private final ProductsRestClient productsRestClient;
     private final MessageSource messageSource;
 
     @ModelAttribute("product")
     public Product product(@PathVariable("productId") int productId) {
-        return productService.findProduct(productId).orElseThrow(() -> new NoSuchElementException("catalogue.errors.product.not_found"));
+        return productsRestClient.findProduct(productId).orElseThrow(() -> new NoSuchElementException("catalogue.errors.product.not_found"));
     }
 
     @GetMapping
@@ -45,13 +44,13 @@ public class ProductController {
 
     @PostMapping("edit")
     public String updateProduct(@ModelAttribute(value = "product", binding = false) Product product, UpdateProductPayload payload) {
-        productService.updateProduct(product.getId(), payload.title(), payload.details());
-        return "redirect:/catalogue/products/%d".formatted(product.getId());
+        productsRestClient.updateProduct(product.id(), payload.title(), payload.details());
+        return "redirect:/catalogue/products/%d".formatted(product.id());
     }
 
     @PostMapping("delete")
     public String deleteProduct(@ModelAttribute("product") Product product) {
-        productService.deleteProduct(product.getId());
+        productsRestClient.deleteProduct(product.id());
         return "redirect:/catalogue/products/list";
     }
 

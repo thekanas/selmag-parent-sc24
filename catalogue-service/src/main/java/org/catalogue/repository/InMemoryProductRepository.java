@@ -1,6 +1,6 @@
-package org.example.repository;
+package org.catalogue.repository;
 
-import org.example.entity.Product;
+import org.catalogue.entity.Product;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;

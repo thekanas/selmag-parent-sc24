@@ -1,11 +1,11 @@
-package org.example.service;
+package org.example.client;
 
 import org.example.entity.Product;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductService {
+public interface ProductsRestClient {
 
     List<Product> findAllProducts();
 
@@ -13,8 +13,7 @@ public interface ProductService {
 
     Optional<Product> findProduct(int productId);
 
-    void updateProduct(Integer id, String title, String details);
+    void updateProduct(int prodductId, String title, String details);
 
-    void deleteProduct(Integer id);
-
+    void deleteProduct(int productId);
 }

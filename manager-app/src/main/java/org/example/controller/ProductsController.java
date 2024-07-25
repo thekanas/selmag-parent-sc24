@@ -1,14 +1,12 @@
 package org.example.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.client.BadRequestException;
+import org.example.client.ProductsRestClient;
 import org.example.controller.payload.NewProductPayload;
 import org.example.entity.Product;
-import org.example.service.DefaultProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 @RequestMapping("catalogue/products")
 public class ProductsController {
-    private final DefaultProductService productService;
+    private final ProductsRestClient productsRestClient;
 
     @GetMapping("list")
     public String getProductList(Model model) {
-        model.addAttribute("products", productService.findAllProducts());
+        model.addAttribute("products", productsRestClient.findAllProducts());
         return "catalogue/products/list";
     }
 
@@ -31,18 +29,17 @@ public class ProductsController {
     }
 
     @PostMapping("create")
-    public String createProduct(@Valid NewProductPayload payload,
-                                BindingResult bindingResult,
+    public String createProduct(NewProductPayload payload,
                                 Model model) {
-        if( bindingResult.hasErrors()) {
-            model.addAttribute("payload", payload);
-            model.addAttribute("errors", bindingResult.getAllErrors().stream()
-                    .map(ObjectError::getDefaultMessage)
-                    .toList());
-            return "catalogue/products/new_product";
-        } else {
-            Product product = productService.createProduct(payload.title(), payload.details());
-            return "redirect:/catalogue/products/%d".formatted(product.getId());
-        }
+            try {
+                Product product = productsRestClient.createProduct(payload.title(), payload.details());
+                return "redirect:/catalogue/products/%d".formatted(product.id());
+            } catch (BadRequestException e) {
+                model.addAttribute("payload", payload);
+                model.addAttribute("errors", e.getErrors());
+
+                return "catalogue/products/new_product";
+            }
+
     }
 }
